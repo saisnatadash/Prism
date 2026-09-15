@@ -16,7 +16,10 @@ class Settings(BaseSettings):
 
     groq_api_key: str = ""
     groq_base_url: str = "https://api.groq.com/openai/v1"
-    groq_model: str = "qwen/qwen3-32b"
+    # qwen/qwen3-32b was deprecated by Groq (shut down 2026-07-17); this is
+    # its current successor on the free/developer tier. Override via env if
+    # Groq's catalog changes again — check `client.models.list()`.
+    groq_model: str = "qwen/qwen3.8-27b"
 
     embedding_model_name: str = "paraphrase-multilingual-MiniLM-L12-v2"
 
