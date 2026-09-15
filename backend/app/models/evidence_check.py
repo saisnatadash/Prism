@@ -22,5 +22,8 @@ class EvidenceCheck(Base):
         UUID(as_uuid=True), ForeignKey("reports.id", ondelete="SET NULL"), nullable=True
     )
     match_score: Mapped[float | None] = mapped_column(Float, nullable=True)
-    outcome: Mapped[str] = mapped_column(String, default="pending")
+    outcome: Mapped[str] = mapped_column(String, default="pending")  # SUPPORTS | CONTRADICTS | NEUTRAL
+    old_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    new_confidence: Mapped[float | None] = mapped_column(Float, nullable=True)
+    reasoning: Mapped[str | None] = mapped_column(Text, nullable=True)
     checked_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

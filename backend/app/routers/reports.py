@@ -7,7 +7,9 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db
 from app.data_generator import load_seed_file
+from app.llm_pipeline import ProcessResult, process_unprocessed_reports
 from app.models.report import Report
+from app.models.structured_signal import StructuredSignal
 from app.schemas.report import ReportOut, SeedResult
 
 router = APIRouter()
@@ -49,6 +51,17 @@ def seed_reports(db: Session = Depends(get_db)) -> SeedResult:
     )
 
 
+@router.post("/process", response_model=ProcessResult)
+async def process_reports(
+    limit: int | None = Query(default=None, ge=1, le=1000),
+    db: Session = Depends(get_db),
+) -> ProcessResult:
+    """Run Qwen extraction + embedding over every report with no
+    structured_signals row yet. Concurrency to Groq is semaphore-limited.
+    """
+    return await process_unprocessed_reports(db, limit=limit)
+
+
 @router.get("", response_model=list[ReportOut])
 def list_reports(
     limit: int = Query(default=50, ge=1, le=500),
@@ -56,6 +69,38 @@ def list_reports(
 ) -> list[Report]:
     stmt = select(Report).order_by(Report.reported_at.desc()).limit(limit)
     return list(db.execute(stmt).scalars().all())
+
+
+@router.get("/feed")
+def feed(
+    limit: int = Query(default=40, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[dict]:
+    """Reports with their extracted JSON alongside (null if not processed yet),
+    most recent first — for the Live Event Feed screen."""
+    stmt = (
+        select(Report, StructuredSignal)
+        .outerjoin(StructuredSignal, StructuredSignal.report_id == Report.id)
+        .order_by(Report.reported_at.desc())
+        .limit(limit)
+    )
+    out = []
+    for report, signal in db.execute(stmt).all():
+        out.append(
+            {
+                "report": ReportOut.model_validate(report).model_dump(mode="json"),
+                "signal": (
+                    {
+                        "category": signal.category,
+                        "severity_hint": signal.severity_hint,
+                        "entities": signal.entities,
+                    }
+                    if signal
+                    else None
+                ),
+            }
+        )
+    return out
 
 
 @router.get("/stats")

@@ -52,3 +52,7 @@ body {
   background: var(--panel-border);
   border-radius: 9999px;
 }
+
+.btn {
+  @apply rounded-lg border border-panel-border bg-black/20 px-3 py-1.5 text-xs font-medium text-slate-200 transition hover:bg-black/40 disabled:cursor-not-allowed disabled:opacity-40;
+}

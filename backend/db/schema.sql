@@ -71,7 +71,9 @@ CREATE TABLE IF NOT EXISTS hypotheses (
     cluster_id  UUID NOT NULL REFERENCES clusters (id) ON DELETE CASCADE,
     statement   TEXT NOT NULL,
     rationale   TEXT,
-    confidence  DOUBLE PRECISION NOT NULL DEFAULT 0.5,
+    confidence  DOUBLE PRECISION NOT NULL DEFAULT 50, -- 0-100 scale
+    -- {supporting_evidence: [...], contradicting_evidence: [...], assumptions: [...], predictions: [...]}
+    details     JSONB NOT NULL DEFAULT '{}'::jsonb,
     status      TEXT NOT NULL DEFAULT 'active', -- active | confirmed | rejected
     created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -83,10 +85,13 @@ CREATE INDEX IF NOT EXISTS idx_hypotheses_cluster_id ON hypotheses (cluster_id);
 CREATE TABLE IF NOT EXISTS evidence_checks (
     id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     hypothesis_id      UUID NOT NULL REFERENCES hypotheses (id) ON DELETE CASCADE,
-    predicted_evidence TEXT NOT NULL,
+    predicted_evidence TEXT NOT NULL, -- the hypothesis prediction this evidence matched, if any
     observed_report_id UUID REFERENCES reports (id) ON DELETE SET NULL,
-    match_score        DOUBLE PRECISION,
-    outcome            TEXT NOT NULL DEFAULT 'pending', -- pending | supports | contradicts | inconclusive
+    match_score        DOUBLE PRECISION, -- composite relevance score from the deterministic scorer
+    outcome            TEXT NOT NULL DEFAULT 'pending', -- SUPPORTS | CONTRADICTS | NEUTRAL
+    old_confidence     DOUBLE PRECISION,
+    new_confidence     DOUBLE PRECISION,
+    reasoning          TEXT,
     checked_at         TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
