@@ -1,222 +1,141 @@
-# PRISM
+# PRISM — Environmental Signal-to-Evidence Engine
 
-Early anomaly intelligence from multilingual (English, Hindi, Odia) simulated
-citizen reports. Reports are structured by Qwen3, clustered by meaning +
-geography + time via pgvector, scored for anomalies with pure statistics, and
-explained with competing hypotheses whose confidence updates deterministically
-as new evidence arrives.
+PRISM connects India's environmental open data into one investigation
+workspace: it links evidence to competing hypotheses, and runs a
+counterfactual challenge engine that says exactly what's supported,
+contradicted, or still missing before anyone treats a reading as a finding.
 
-## Architecture
+This repo contains a full, runnable implementation:
 
-- `frontend/` — Next.js (App Router) + TypeScript + Tailwind CSS, 3-screen
-  dashboard (Live Event Feed / Investigation / Confidence Evolution)
-- `backend/` — Python FastAPI, with sentence-transformers embeddings run
-  in-process (no separate embedding service)
-- Database — PostgreSQL + pgvector. Local dev uses a Docker container; the
-  deployed backend points at Supabase Postgres instead.
-- LLM — Qwen3 via Groq's OpenAI-compatible API (see note below)
+- **`frontend/`** — React + TypeScript + Vite + Tailwind + Framer Motion.
+  Animated landing page, investigation workspace (signal-to-evidence graph),
+  counterfactual engine screen, dataset observatory.
+- **`backend/`** — FastAPI + SQLAlchemy. Seeds a clearly-labelled **synthetic**
+  demo dataset shaped exactly like real CPCB/IMD/India-WRIS records, serves
+  it over a REST API, and recomputes hypothesis status with a transparent,
+  rule-based counterfactual engine (`backend/app/core/engine.py`).
 
-```
-prism/
-├── docker-compose.yml       # local Postgres + pgvector only
-├── backend/
-│   ├── app/
-│   │   ├── main.py            # FastAPI app, /health, router wiring
-│   │   ├── core/               # config + db session
-│   │   ├── models/             # SQLAlchemy models
-│   │   ├── data_generator.py   # synthetic report simulator
-│   │   ├── llm_pipeline.py     # raw report -> structured_signals (Qwen + embeddings)
-│   │   ├── clustering.py       # pgvector SQL clustering (no LLM)
-│   │   ├── anomaly_scoring.py  # pure-statistics anomaly score
-│   │   ├── hypothesis_engine.py# competing-hypothesis generation (Qwen)
-│   │   ├── evidence_engine.py  # evidence verification (Qwen) + deterministic confidence scorer
-│   │   ├── replay_engine.py    # releases the next held-back report end-to-end
-│   │   └── routers/            # reports / clusters / replay endpoints
-│   ├── db/schema.sql       # raw SQL schema (source of truth)
-│   ├── requirements.txt
-│   └── .env.example
-└── frontend/
-    ├── src/app/            # Next.js App Router pages
-    ├── src/components/     # the 3 screens + shared UI
-    ├── src/lib/api.ts      # typed fetch client
-    └── .env.example
-```
+**Important, read this before calling anything "live":** the demo data in
+`frontend/src/data/demo.ts` and `backend/app/seed.py` is synthetic — built to
+match the real datasets' schema so the workflow behaves correctly, but no
+row in it is an actual CPCB/IMD/WRIS measurement. The app says so on every
+screen that shows it ("Demo data, clearly labelled"). See **Wiring in real
+data** below for how to replace it.
 
-### A note on the model
+---
 
-The spec calls for Qwen3-32B via Groq. **Groq deprecated `qwen/qwen3-32b`**
-(shut down 2026-07-17); this codebase uses `qwen/qwen3.8-27b`, the current
-equivalent on Groq, configurable via `GROQ_MODEL` in `backend/.env` if Groq's
-catalog changes again (check `client.models.list()`).
+## Run it locally (fastest path)
 
-**Groq rate limit**: this account's output-tokens/minute budget for this
-model is tight (~1000 OTPM). Processing all 300 seeded reports through
-`/api/reports/process` in one call will take a long time (tens of minutes) —
-this is a Groq-side limit, not something concurrency tuning fixes. For
-demoing quickly, process a smaller batch (see walkthrough below).
-
-## Prerequisites
-
-- Python 3.11+ (tested on 3.14)
-- Node.js 20+
-- Docker Desktop (for local Postgres+pgvector)
-- A Groq API key (https://console.groq.com/keys)
-
-## 1. Local database (Docker)
-
-```bash
-docker compose up -d
-```
-
-Starts Postgres+pgvector on `localhost:5432` (user/password/db all `prism`)
-and applies `backend/db/schema.sql` on first boot. If you change the schema
-after the volume exists, either `docker compose down -v` or apply it by hand:
-
-```bash
-docker compose exec -T db psql -U prism -d prism < backend/db/schema.sql
-```
-
-## 2. Backend (FastAPI)
-
-```bash
-cd backend
-python -m venv .venv
-.venv\Scripts\activate        # Windows
-# source .venv/bin/activate   # macOS/Linux
-
-pip install -r requirements.txt
-cp .env.example .env
-# edit .env and set GROQ_API_KEY
-
-uvicorn app.main:app --reload
-```
-
-Visit http://localhost:8000/health — should return `{"status": "ok"}`.
-
-> The embedding model is pre-loaded at startup (a few seconds once its
-> weights are cached under `~/.cache/huggingface`). If startup ever hangs on
-> the Hugging Face Hub check after the model is already cached, set
-> `HF_HUB_OFFLINE=1` in the environment to skip the network round-trip.
-
-**Avoid `--reload` during a long `/process` run** — editing a file while a
-batch extraction is in flight makes the reloader kill the process mid-request
-and lose that batch's work. Run without `--reload` (`uvicorn app.main:app`)
-whenever you're about to kick off a big processing job.
-
-## 3. Frontend (Next.js)
+**Frontend only** (works with zero backend — falls back to bundled demo data):
 
 ```bash
 cd frontend
 npm install
-cp .env.example .env.local
-
 npm run dev
+# -> http://localhost:5173
 ```
 
-Visit http://localhost:3000.
-
-## Environment variables
-
-**backend/.env**
-| Variable | Purpose | Local default |
-| --- | --- | --- |
-| `DATABASE_URL` | Postgres connection string | local docker-compose Postgres |
-| `GROQ_API_KEY` | Groq API key | (required) |
-| `GROQ_MODEL` | Groq model id | `qwen/qwen3.8-27b` |
-| `CORS_ORIGINS` | Allowed frontend origins | `http://localhost:3000` |
-
-**frontend/.env.local**
-| Variable | Purpose | Local default |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | Backend base URL | `http://localhost:8000` |
-
-## Full walkthrough
-
-The frontend's control bar drives this in order (or use curl directly):
-
-```bash
-# 1. Load 300 synthetic reports (raw text, unprocessed)
-curl -X POST http://localhost:8000/api/reports/seed
-
-# 2. Extract structured signals + embeddings for a batch of reports.
-#    Given the Groq rate limit above, start with a modest batch rather
-#    than all 300 for a quick demo:
-curl -X POST "http://localhost:8000/api/reports/process?limit=80"
-
-# 3. Cluster (pgvector SQL, no LLM) + score anomalies (pure statistics)
-curl -X POST http://localhost:8000/api/clusters/detect
-# -> look for the Old Town (Ward 12) / Kharavela Nagar (Ward 9) cluster(s)
-#    scoring near 1.0; background-chatter clusters should not appear at all
-
-# 4. Generate 3 competing hypotheses for the anomalous cluster
-curl -X POST http://localhost:8000/api/clusters/<cluster_id>/hypotheses
-
-# 5. Replay the rest of the timeline one report at a time. Each call
-#    extracts the next unprocessed report, re-clusters, verifies it against
-#    every active hypothesis, and updates confidence deterministically.
-curl -X POST http://localhost:8000/api/replay/next
-```
-
-To see a real confidence **drop**, process everything except the last 5
-seeded reports first (the 3 supporting + 2 contradictory reports the
-simulator deliberately holds for last) so `/api/replay/next` reaches them
-next in chronological order — otherwise it'll surface whatever's
-chronologically next among the reports you haven't processed yet, which for
-a partial `?limit=N` batch means ordinary background/escalation reports
-first.
-
-## Database schema
-
-Five tables in [`backend/db/schema.sql`](backend/db/schema.sql):
-
-- **reports** — raw citizen reports as ingested, in their original language
-- **structured_signals** — Qwen-extracted structured observations per report:
-  a `vector(384)` embedding (dimension matches
-  `paraphrase-multilingual-MiniLM-L12-v2`), `entities` JSONB (phenomena,
-  entities, severity, timing, reporter scale, certainty, domain guess), and a
-  nullable `cluster_id`. `summary` always holds the verbatim raw text — it's
-  never discarded or overwritten even when extraction fails and falls back.
-- **clusters** — pgvector-clustered groups of signals (same ward, rolling
-  time window, cosine-similar, ≥5 distinct reports), with a centroid
-  embedding and an `anomaly_score`
-- **hypotheses** — 3 competing explanations per anomalous cluster, with a
-  `details` JSONB holding `supporting_evidence` / `contradicting_evidence` /
-  `assumptions` / `predictions`
-- **evidence_checks** — one row per replay step per hypothesis: the LLM's
-  SUPPORTS/CONTRADICTS/NEUTRAL verdict, `old_confidence` / `new_confidence`
-  from the deterministic scorer, and its `reasoning`
-
-## Tuning knobs
-
-- `backend/app/clustering.py`: `SIMILARITY_THRESHOLD`, `TIME_WINDOW_HOURS`,
-  `MIN_CLUSTER_REPORTS`
-- `backend/app/anomaly_scoring.py`: `BASELINE_RATE_PER_DAY`,
-  `ANOMALY_THRESHOLD` (hypothesis generation should only be triggered once a
-  cluster crosses this)
-- `backend/app/evidence_engine.py`: `MAX_SWING_POINTS`, `BASE_SWING_POINTS`,
-  `GEO_DECAY_KM`, `TEMPORAL_DECAY_HOURS` for the deterministic confidence
-  scorer
-- `backend/app/llm_pipeline.py`: `CONCURRENCY_LIMIT` for Groq calls
-
-## Simulated report seeding
-
-[`backend/app/data_generator.py`](backend/app/data_generator.py) generates
-300 synthetic multilingual (English/Hindi/Odia) citizen reports over a
-simulated 24-hour window in Bhubaneswar: ~65% unrelated background chatter,
-plus one emerging water-contamination event that builds gradually (weak
-signals -> vomiting reports -> a dead-fish-in-canal report -> spread to a
-neighbouring ward -> supporting evidence -> a contradicting official
-statement), all in chronological order. Regenerate the checked-in seed file:
+**Full stack, with SQLite** (no Docker, no Postgres needed):
 
 ```bash
 cd backend
-python -m app.data_generator
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload --port 8000
 ```
 
-## Deploying
+```bash
+# in another terminal
+cd frontend
+cp .env.example .env.local        # points VITE_API_URL at localhost:8000
+npm install
+npm run dev
+```
 
-- **Backend (Render)**: set `DATABASE_URL` to your Supabase connection
-  string, `GROQ_API_KEY`, and `GROQ_MODEL` in Render's environment settings.
-  Run `backend/db/schema.sql` once against Supabase before first deploy.
-- **Frontend (Vercel)**: point `NEXT_PUBLIC_API_URL` at the deployed backend
-  URL.
+**Full stack with Docker + Postgres/PostGIS** (closest to production):
+
+```bash
+docker compose up --build
+# frontend -> http://localhost:5173
+# backend  -> http://localhost:8000
+```
+
+---
+
+## Hosting it live
+
+The stack is split so each half deploys to the host suited for it:
+
+### 1. Backend → Render
+
+1. Push this repo to GitHub.
+2. In Render: **New → Blueprint**, point it at the repo. Render reads
+   `render.yaml` at the root and provisions the web service + a free
+   Postgres database automatically.
+3. Once it's deployed, copy the service URL Render gives you
+   (`https://prism-backend-xxxx.onrender.com`).
+
+### 2. Frontend → Cloudflare Pages
+
+1. In Cloudflare: **Workers & Pages → Create → Pages → Connect to Git**,
+   pick this repo.
+2. Build settings:
+   - **Root directory:** `frontend`
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+3. Add an environment variable: `VITE_API_URL` = the Render backend URL
+   from step above.
+4. Deploy. Cloudflare gives you a `*.pages.dev` URL immediately; add a
+   custom domain under the project's **Custom domains** tab whenever
+   you're ready.
+5. Back in Render, set the backend's `CORS_ORIGINS` env var to your
+   Cloudflare Pages URL (instead of `*`) and redeploy, so the API only
+   accepts requests from your live frontend.
+
+Neither step needs you to hand any API key or secret to anyone outside
+your own Render/Cloudflare accounts — both platforms deploy straight from
+the GitHub repo on every push once connected.
+
+---
+
+## Wiring in real data
+
+Replace the synthetic seed with real ingestion in two places:
+
+1. **`backend/app/seed.py`** — swap this script for an ingest job that pulls
+   from the real sources already listed in the dataset registry:
+   - CPCB real-time data: `data.gov.in` (CPCB's open API/resource IDs)
+   - IMD rainfall/climate records: IMD's open data portal
+   - India-WRIS: WRIS's public API
+   Write real rows with `is_synthetic=0` (the column already exists on
+   `Dataset` and `Observation` in `backend/app/models/orm.py`) so the two
+   can never be confused.
+2. **Dataset `status`** — flip a dataset's `status` to `"connected"` only
+   once real rows are flowing in; `"planned"` datasets (Bhuvan, AIKosh in
+   the current seed) show up honestly as not-yet-wired-in on the Datasets
+   page.
+
+To add LLM-drafted hypotheses (e.g. via a hosted Qwen2.5 endpoint), fill in
+`draft_hypothesis()` in `backend/app/core/engine.py` — it's stubbed with a
+clear interface so this drops in without touching the rule-based status
+engine, which stays deterministic and auditable on purpose.
+
+---
+
+## Project layout
+
+```
+prism/
+├── frontend/           React + Vite + TS + Tailwind + Framer Motion
+│   ├── src/pages/       Landing, Investigation, Counterfactual, Datasets
+│   ├── src/data/        types + bundled demo dataset (synthetic, labelled)
+│   └── src/lib/api.ts   API client with fallback to demo data
+├── backend/             FastAPI + SQLAlchemy
+│   ├── app/models/      ORM models + Pydantic schemas
+│   ├── app/routers/     /api/datasets, /api/investigations
+│   ├── app/core/engine.py   rule-based counterfactual engine
+│   └── app/seed.py      synthetic demo seed (clearly labelled)
+├── docker-compose.yml   full stack incl. Postgres/PostGIS
+├── render.yaml          backend deploy blueprint
+└── README.md
+```

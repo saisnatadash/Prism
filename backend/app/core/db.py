@@ -1,21 +1,19 @@
-from collections.abc import Generator
-
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
+from sqlalchemy.orm import sessionmaker, declarative_base
 
-from app.core.config import get_settings
+# Defaults to a local SQLite file so the backend runs with zero setup.
+# Point DATABASE_URL at Postgres (+ PostGIS, per the architecture) in production:
+#   postgresql+psycopg2://user:pass@host:5432/prism
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./prism.db")
 
-settings = get_settings()
-
-engine = create_engine(settings.database_url, pool_pre_ping=True)
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-
-
-class Base(DeclarativeBase):
-    pass
+connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
 
-def get_db() -> Generator[Session, None, None]:
+def get_db():
     db = SessionLocal()
     try:
         yield db

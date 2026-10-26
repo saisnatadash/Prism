@@ -1,10 +1,8 @@
-# Local development only. This spins up a Postgres + pgvector container so you
-# can develop PRISM without touching the Supabase database. The deployed
-# backend (e.g. on Render) uses the Supabase DATABASE_URL instead of this.
+version: "3.9"
+
 services:
   db:
-    image: pgvector/pgvector:pg16
-    container_name: prism-db
+    image: postgis/postgis:16-3.4
     restart: unless-stopped
     environment:
       POSTGRES_USER: prism
@@ -13,13 +11,30 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - prism_db_data:/var/lib/postgresql/data
-      - ./backend/db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prism -d prism"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
+      - prism_pg_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: postgresql+psycopg2://prism:prism@db:5432/prism
+      CORS_ORIGINS: http://localhost:5173
+      AUTO_SEED: "true"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: http://localhost:8000
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
 
 volumes:
-  prism_db_data:
+  prism_pg_data:
