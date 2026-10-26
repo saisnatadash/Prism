@@ -2,21 +2,13 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { useRef } from 'react'
 import Nav from '../components/Nav'
-import { ArrowRight, Database, GitBranch, ShieldCheck, Sparkles } from 'lucide-react'
+import { ArrowRight, Database, GitBranch, ShieldCheck } from 'lucide-react'
 
 const stats = [
   { n: '5', l: 'Indian open datasets wired in' },
   { n: '0', l: 'Unverified claims allowed through' },
   { n: '12', l: 'Connected investigation screens' },
   { n: '100%', l: 'Of claims traced to a source' },
-]
-
-const dots = [
-  { left: '34%', top: '22%', delay: 0 },
-  { left: '58%', top: '44%', delay: 0.3 },
-  { left: '46%', top: '64%', delay: 0.6 },
-  { left: '70%', top: '58%', delay: 0.9 },
-  { left: '26%', top: '52%', delay: 1.2 },
 ]
 
 const steps = [
@@ -44,12 +36,14 @@ function FeatureCard({ icon: Icon, title, body, i }: { icon: typeof Database; ti
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-80px' }}
       transition={{ duration: 0.55, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-      className="glass rounded-2xl p-7 flex-1 min-w-[260px] hover:border-[rgba(52,211,153,0.35)] transition-colors"
+      className="glass rounded-[8px] p-7 flex-1 min-w-[260px] hover:border-[rgba(52,211,153,0.35)] transition-colors"
     >
-      <div className="w-11 h-11 rounded-xl bg-[rgba(52,211,153,0.12)] border border-[rgba(52,211,153,0.3)] flex items-center justify-center mb-5">
-        <Icon size={20} className="text-[var(--color-emerald)]" />
+      <div className="flex items-center gap-3 mb-5">
+        <span className="font-mono text-[11px] text-[var(--color-muted)]">0{i + 1}</span>
+        <div className="h-px flex-1 bg-[var(--color-border)]" />
+        <Icon size={16} className="text-[var(--color-emerald)]" />
       </div>
-      <div className="font-bold text-[17px] mb-2">{title}</div>
+      <div className="font-display font-semibold text-[19px] mb-2">{title}</div>
       <p className="text-[13.5px] text-[var(--color-muted)] leading-relaxed">{body}</p>
     </motion.div>
   )
@@ -78,20 +72,21 @@ export default function Landing() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
-                className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[0.14em] text-[var(--color-emerald)] mb-6"
+                className="inline-flex items-center gap-2.5 font-mono text-[11px] text-[var(--color-muted)] mb-7 border border-[var(--color-border)] rounded-[3px] px-2.5 py-1"
               >
-                <Sparkles size={13} />
-                INDIA-FIRST ENVIRONMENTAL INTELLIGENCE
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-emerald)] glow-dot" />
+                CASE FILE &middot; MAHANADI SECTOR 4 &middot; ODISHA
               </motion.div>
 
               <motion.h1
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-                className="text-[40px] md:text-[54px] font-extrabold leading-[1.1] tracking-tight"
+                className="font-display text-[42px] md:text-[58px] font-semibold leading-[1.08] tracking-tight"
+                style={{ textWrap: 'balance' }}
               >
                 Environmental crises rarely begin with{' '}
-                <span className="text-gradient">a complete picture.</span>
+                <span className="italic font-medium text-[var(--color-emerald)]">a complete picture.</span>
               </motion.h1>
 
               <motion.p
@@ -113,14 +108,14 @@ export default function Landing() {
               >
                 <Link
                   to="/investigation"
-                  className="group flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-[14px] bg-gradient-to-br from-[var(--color-emerald-dim)] to-[var(--color-teal)] text-[#06130D] hover:brightness-110 transition shadow-[0_0_30px_rgba(52,211,153,0.25)]"
+                  className="group flex items-center gap-2 px-5 py-3 rounded-[4px] font-semibold text-[14px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors"
                 >
                   Launch investigation
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <Link
                   to="/datasets"
-                  className="px-5 py-3 rounded-xl font-semibold text-[14px] border border-[var(--color-border)] hover:bg-white/5 transition"
+                  className="px-5 py-3 rounded-[4px] font-semibold text-[14px] border border-[var(--color-border)] hover:bg-white/5 transition"
                 >
                   Explore a live demonstration
                 </Link>
@@ -138,46 +133,34 @@ export default function Landing() {
                     initial={{ opacity: 0, y: 14 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.55 + i * 0.08 }}
-                    className="glass rounded-xl p-4"
+                    className="glass rounded-[6px] p-4"
                   >
-                    <div className="text-[26px] font-extrabold text-[var(--color-emerald)] tabular-nums">{s.n}</div>
+                    <div className="font-display text-[28px] font-medium text-[var(--color-emerald)] tabular-nums">{s.n}</div>
                     <div className="text-[11.5px] text-[var(--color-muted)] mt-1 leading-snug">{s.l}</div>
                   </motion.div>
                 ))}
               </motion.div>
             </motion.div>
 
-            {/* animated map */}
+            {/* brand mark panel */}
             <motion.div
-              style={{ y: mapY }}
               initial={{ opacity: 0, scale: 0.94 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.9, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="relative rounded-[22px] border border-[var(--color-border)] h-[380px] md:h-[440px] overflow-hidden hidden sm:block"
+              className="relative rounded-[10px] border border-[var(--color-border)] h-[380px] md:h-[440px] overflow-hidden hidden sm:flex items-center justify-center"
+              style={{ y: mapY, background: 'linear-gradient(160deg, #0B1D16, #060f0b)' }}
             >
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    'radial-gradient(circle at 60% 30%, rgba(52,211,153,0.2), transparent 45%), radial-gradient(circle at 30% 70%, rgba(45,212,191,0.16), transparent 45%), linear-gradient(135deg,#0B1D16,#081511)',
-                }}
+              <div className="noise-grid absolute inset-0 opacity-30" />
+              <img
+                src="./prism-mark.png"
+                alt="PRISM mark — a river running through a signal-connected landscape"
+                className="float-slow relative w-[62%] max-w-[260px] drop-shadow-[0_0_60px_rgba(52,211,153,0.25)]"
               />
-              <div className="absolute top-4 left-5 text-[12px] text-[var(--color-muted)] font-medium">
-                India Environmental Observatory
+              <div className="absolute top-4 left-5 font-mono text-[11px] text-[var(--color-muted)]">
+                PRISM &middot; signal map
               </div>
-              {dots.map((d, i) => (
-                <div key={i} className="absolute" style={{ left: d.left, top: d.top }}>
-                  <div
-                    className="w-2.5 h-2.5 rounded-full bg-[var(--color-emerald)] glow-dot"
-                    style={{ boxShadow: '0 0 16px rgba(52,211,153,0.9)', animationDelay: `${d.delay}s` }}
-                  />
-                </div>
-              ))}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 420 440">
-                <path d="M143 97 L243 194 L193 282 L294 256" fill="none" stroke="rgba(52,211,153,0.35)" strokeWidth="1.2" className="flow-line" />
-              </svg>
-              <div className="absolute bottom-4 right-5 text-[10.5px] text-[var(--color-muted)]">
-                Demo coordinates — illustrative only
+              <div className="absolute bottom-4 right-5 font-mono text-[10px] text-[var(--color-muted)]">
+                THE SIGNAL BEFORE THE CRISIS
               </div>
             </motion.div>
           </div>
@@ -192,9 +175,9 @@ export default function Landing() {
           viewport={{ once: true }}
           className="mb-12 max-w-[640px]"
         >
-          <div className="text-[12px] font-bold tracking-[0.14em] text-[var(--color-emerald)] mb-3">HOW PRISM WORKS</div>
-          <h2 className="text-[28px] md:text-[34px] font-extrabold leading-tight">
-            From a raw signal to a defensible conclusion — in three steps.
+          <div className="font-mono text-[11px] text-[var(--color-muted)] mb-3">02 &middot; METHOD</div>
+          <h2 className="font-display text-[28px] md:text-[36px] font-medium leading-tight">
+            From a raw signal to a defensible conclusion, in three steps.
           </h2>
         </motion.div>
         <div className="flex flex-col md:flex-row gap-5">
@@ -211,14 +194,14 @@ export default function Landing() {
         viewport={{ once: true }}
         className="max-w-[1180px] mx-auto px-6 md:px-10 pb-24"
       >
-        <div className="glass rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
-          <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[var(--color-emerald)]/10 blur-[90px] rounded-full pointer-events-none" />
-          <h3 className="text-[26px] md:text-[32px] font-extrabold max-w-[640px] mx-auto leading-tight relative">
+        <div className="glass rounded-[10px] p-10 md:p-14 text-center relative overflow-hidden">
+          <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-[var(--color-emerald)]/8 blur-[90px] rounded-full pointer-events-none" />
+          <h3 className="font-display text-[26px] md:text-[34px] font-medium max-w-[640px] mx-auto leading-tight relative" style={{ textWrap: 'balance' }}>
             India doesn't need more environmental data. It needs a way to act on what it already has.
           </h3>
           <Link
             to="/investigation"
-            className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-xl font-semibold text-[14px] bg-gradient-to-br from-[var(--color-emerald-dim)] to-[var(--color-teal)] text-[#06130D] hover:brightness-110 transition relative"
+            className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-[4px] font-semibold text-[14px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors relative"
           >
             Launch investigation <ArrowRight size={16} />
           </Link>

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -14,8 +14,9 @@
   --color-coral: #F87171;
   --color-ink: #EAF6EF;
   --color-muted: #8FB6A5;
-  --font-sans: 'Inter', -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'IBM Plex Sans', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;
+  --font-mono: 'IBM Plex Mono', 'SF Mono', monospace;
 }
 
 html, body {
@@ -25,6 +26,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
+
+.font-display { font-family: var(--font-display); font-optical-sizing: auto; }
+.font-mono { font-family: var(--font-mono); }
 
 * { scrollbar-width: thin; scrollbar-color: rgba(52,211,153,0.25) transparent; }
 ::-webkit-scrollbar { width: 8px; height: 8px; }

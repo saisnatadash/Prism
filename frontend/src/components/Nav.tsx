@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom'
-import { motion } from 'framer-motion'
 
 const links = [
   { to: '/investigation', label: 'Investigation' },
@@ -10,23 +9,17 @@ const links = [
 export default function Nav() {
   const { pathname } = useLocation()
   return (
-    <div className="flex items-center justify-between px-6 md:px-10 py-4 border-b border-[var(--color-border)] relative z-20 bg-[var(--color-bg)]/80 backdrop-blur-md sticky top-0">
-      <Link to="/" className="flex items-center gap-2.5 font-extrabold text-[15px]">
-        <motion.div
-          initial={{ rotate: -8 }}
-          animate={{ rotate: 0 }}
-          className="w-7 h-7 rounded-[8px] bg-gradient-to-br from-[var(--color-emerald)] to-[var(--color-teal)] flex items-center justify-center text-[#06130D] font-black text-xs"
-        >
-          P
-        </motion.div>
-        PRISM
+    <div className="flex items-center justify-between px-6 md:px-10 py-3.5 border-b border-[var(--color-border)] relative z-20 bg-[var(--color-bg)]/85 backdrop-blur-md sticky top-0">
+      <Link to="/" className="flex items-center gap-2.5">
+        <img src="./prism-mark.png" alt="" className="w-8 h-8 object-contain" />
+        <span className="font-display font-semibold text-[17px] tracking-tight">PRISM</span>
       </Link>
-      <div className="hidden md:flex items-center gap-7 text-[13.5px] text-[var(--color-muted)]">
+      <div className="hidden md:flex items-center gap-7 font-mono text-[12px] uppercase tracking-wide text-[var(--color-muted)]">
         {links.map((l) => (
           <Link
             key={l.to}
             to={l.to}
-            className={`transition-colors hover:text-[var(--color-ink)] ${pathname === l.to ? 'text-[var(--color-emerald)] font-semibold' : ''}`}
+            className={`transition-colors hover:text-[var(--color-ink)] ${pathname === l.to ? 'text-[var(--color-emerald)]' : ''}`}
           >
             {l.label}
           </Link>
@@ -34,7 +27,7 @@ export default function Nav() {
       </div>
       <Link
         to="/investigation"
-        className="text-[13px] font-semibold px-4 py-2 rounded-lg bg-gradient-to-br from-[var(--color-emerald-dim)] to-[var(--color-teal)] text-[#06130D] hover:brightness-110 transition"
+        className="text-[13px] font-semibold px-4 py-2 rounded-[4px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors"
       >
         Launch investigation
       </Link>
