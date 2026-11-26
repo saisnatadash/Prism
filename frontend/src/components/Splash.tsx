@@ -9,9 +9,7 @@ const STEPS = [
 ]
 
 export default function Splash() {
-  const [show, setShow] = useState(() => {
-    try { return !sessionStorage.getItem('prism-splash') } catch { return true }
-  })
+    const [show, setShow] = useState(true)
   const [i, setI] = useState(0)
 
   useEffect(() => {
@@ -19,7 +17,7 @@ export default function Splash() {
     const t = setInterval(() => setI((x) => Math.min(x + 1, STEPS.length - 1)), 450)
     const done = setTimeout(() => {
       setShow(false)
-      try { sessionStorage.setItem('prism-splash', '1') } catch { /* ignore */ }
+  
     }, 2200)
     return () => { clearInterval(t); clearTimeout(done) }
   }, [show])
