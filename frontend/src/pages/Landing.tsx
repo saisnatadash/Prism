@@ -167,6 +167,26 @@ export default function Landing() {
         </div>
       </div>
 
+      {/* plain-words explainer */}
+      <div className="max-w-[1180px] mx-auto px-6 md:px-10 pt-6 pb-4 relative">
+        <div className="font-mono text-[11px] text-[var(--color-muted)] mb-3">01 &middot; IN PLAIN WORDS</div>
+        <h2 className="font-display text-[28px] md:text-[36px] font-medium leading-tight max-w-[760px] mb-10">
+          When a river turns foamy, different offices hold different pieces of the answer. PRISM puts them side by side.
+        </h2>
+        <div className="grid md:grid-cols-3 gap-5">
+          {[
+            { h: 'The environmental problem', b: 'River pollution, bad air and crop-killing pests start as small, scattered signs: a smell reported by one person, a sensor spike, a dead fish. They sit in different systems, so officers join them by hand, usually after the harm is visible.' },
+            { h: 'What PRISM does', b: 'It reads citizen reports (English, Hindi, Odia) and public readings together, lists the possible explanations, and tests each one against the evidence for and against. It then names the one check that would settle it. It never declares an emergency; a human decides.' },
+            { h: 'Where the data comes from', b: 'Citizen reports, plus open government sources: CPCB water and air readings, IMD rainfall, India-WRIS river gauges. In this demo the records are synthetic, written in the same format as those sources and labelled as such. Live feeds are the next build step.' },
+          ].map((c) => (
+            <div key={c.h} className="glass rounded-[8px] p-6">
+              <div className="font-display font-semibold text-[18px] mb-2 text-[var(--color-emerald)]">{c.h}</div>
+              <p className="text-[13.5px] text-[var(--color-muted)] leading-relaxed">{c.b}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* how it works */}
       <div className="max-w-[1180px] mx-auto px-6 md:px-10 py-20 md:py-28">
         <motion.div

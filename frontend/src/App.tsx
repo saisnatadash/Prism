@@ -6,6 +6,7 @@ import Counterfactual from './pages/Counterfactual'
 import Datasets from './pages/Datasets'
 import Monitor from './pages/Monitor'
 import { InvestigationProvider } from './lib/store'
+import Splash from './components/Splash'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -18,6 +19,7 @@ function ScrollToTop() {
 export default function App() {
   return (
     <HashRouter>
+      <Splash />
       <ScrollToTop />
       <InvestigationProvider>
       <Routes>
