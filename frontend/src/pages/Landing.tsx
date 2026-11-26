@@ -5,17 +5,17 @@ import Nav from '../components/Nav'
 import { ArrowRight, Database, GitBranch, ShieldCheck } from 'lucide-react'
 
 const stats = [
-  { n: '5', l: 'Indian open datasets wired in' },
-  { n: '0', l: 'Unverified claims allowed through' },
-  { n: '12', l: 'Connected investigation screens' },
-  { n: '100%', l: 'Of claims traced to a source' },
+  { n: '16', l: 'Reports and feeds replayed in the demo case' },
+  { n: '3', l: 'Languages read: English, Hindi, Odia' },
+  { n: '3', l: 'Rival hypotheses tested per case' },
+  { n: '0', l: 'Findings the system declares as confirmed' },
 ]
 
 const steps = [
   {
     icon: Database,
     title: 'Connect the evidence',
-    body: 'CPCB readings, IMD rainfall, India-WRIS gauge levels — pulled into one signal-to-evidence graph instead of five separate tabs.',
+    body: 'Citizen reports, CPCB readings, IMD rainfall and India-WRIS gauge levels, linked by place and time into one signal-to-evidence graph instead of separate tabs.',
   },
   {
     icon: GitBranch,
@@ -107,7 +107,7 @@ export default function Landing() {
                 className="flex flex-wrap gap-3.5 mt-9"
               >
                 <Link
-                  to="/investigation"
+                  to="/monitor"
                   className="group flex items-center gap-2 px-5 py-3 rounded-[4px] font-semibold text-[14px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors"
                 >
                   Launch investigation
@@ -200,7 +200,7 @@ export default function Landing() {
             India doesn't need more environmental data. It needs a way to act on what it already has.
           </h3>
           <Link
-            to="/investigation"
+            to="/monitor"
             className="inline-flex items-center gap-2 mt-8 px-6 py-3.5 rounded-[4px] font-semibold text-[14px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors relative"
           >
             Launch investigation <ArrowRight size={16} />
@@ -209,7 +209,7 @@ export default function Landing() {
       </motion.div>
 
       <footer className="border-t border-[var(--color-border)] py-8 text-center text-[12px] text-[var(--color-muted)]">
-        PRISM &middot; Environmental Signal-to-Evidence Engine &middot; All investigation data on this preview is clearly labelled demo or live
+        PRISM &middot; Environmental Signal-to-Evidence Engine &middot; All case data on this preview is synthetic demonstration data, clearly labelled
       </footer>
     </div>
   )

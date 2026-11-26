@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 
 const links = [
+  { to: '/monitor', label: 'Live monitor' },
   { to: '/investigation', label: 'Investigation' },
   { to: '/counterfactual', label: 'Counterfactual engine' },
   { to: '/datasets', label: 'Datasets' },
@@ -26,7 +27,7 @@ export default function Nav() {
         ))}
       </div>
       <Link
-        to="/investigation"
+        to="/monitor"
         className="text-[13px] font-semibold px-4 py-2 rounded-[4px] bg-[var(--color-emerald)] text-[#06130D] hover:bg-[var(--color-teal)] transition-colors"
       >
         Launch investigation

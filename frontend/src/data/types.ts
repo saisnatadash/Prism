@@ -17,6 +17,10 @@ export interface EvidenceItem {
   text: string
   stance: EvidenceStance
   sourceDatasetId: string
+  /** set in the browser when a user switches this evidence off ("what if it were wrong?") */
+  disabled?: boolean
+  /** true for evidence typed in during this browser session (never saved) */
+  userAdded?: boolean
 }
 
 export interface Hypothesis {

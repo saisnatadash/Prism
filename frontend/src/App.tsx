@@ -4,6 +4,8 @@ import Landing from './pages/Landing'
 import Investigation from './pages/Investigation'
 import Counterfactual from './pages/Counterfactual'
 import Datasets from './pages/Datasets'
+import Monitor from './pages/Monitor'
+import { InvestigationProvider } from './lib/store'
 
 function ScrollToTop() {
   const { pathname } = useLocation()
@@ -17,12 +19,15 @@ export default function App() {
   return (
     <HashRouter>
       <ScrollToTop />
+      <InvestigationProvider>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/monitor" element={<Monitor />} />
         <Route path="/investigation" element={<Investigation />} />
         <Route path="/counterfactual" element={<Counterfactual />} />
         <Route path="/datasets" element={<Datasets />} />
       </Routes>
+      </InvestigationProvider>
     </HashRouter>
   )
 }
